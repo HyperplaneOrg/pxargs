@@ -1,0 +1,124 @@
+.TH pxargs 1 "March 5th, 2012"
+.SH NAME:
+pxargs \- build and execute command lines from a newline delimited list in FILE or from standard input, run in parallel using mpi
+.SH USAGE:
+.B pxargs 
+[
+.B OPTIONS
+] 
+-p <exec>
+
+.SH DESCRIPTION
+The pxargs utility reads newline delimited strings from the standard input or from a file and executes exec with the strings as arguments.
+Blank lines on the standard input or in the file are ignored. The command may be executed across hosts in parallel using mpi, typically 
+on some basic "compute cluster" of nodes with openmpi, lam, etc... installed. pxargs is loosely modeled after the xargs program. 
+
+.TP
+.B --arg-file=<file>, -a <file>
+The path to the arg list
+.br
+The file format is:
+.nf
+<args_1>
+<  .   > 
+<  .   > 
+<args_n> 
+.fi
+
+.TP
+.B --proc=<exec>, -p <exec>
+The executable or script for processing each item given. This script will get called for each
+line in --arg-file, e.g.
+.br
+.nf
+exec <args_1>
+ .   <  .   > 
+ .   <  .   > 
+exec <args_n> 
+.fi
+.br
+
+.TP
+.B --work-analyze, -w
+This option prints out item execution time statistics and information when all work is completed.
+
+.TP
+.B --random-starts=<n-m>, -r <n-m>
+Randomize the initial starts on the interval n to m, where n and m are seconds and n is less than or equal to m. During 
+the initial distribution phase, the work units/items will have a random (uniform) staggered start to desynchronize item execution. 
+The initial distribution will release work items up to numprocs while waiting between each release, then transition into a
+producer-consumer mode with no waiting between work items release.
+.br
+Pseudo code to describe the above:
+.br
+for number of processors-1:
+.br
+   wait random seconds
+.br
+   send work to processor i
+.br
+done for
+.br
+now transition to a producer consumer mode until done with all items.
+
+.p
+This functionality may be useful to avoid all units/items accessing a file(s) at the same time, desynchronize their execution. 
+
+.TP
+.B --max-time, -m <n>
+The maximum runtime in seconds allowed for a arg/work unit. If an "exec args_i" runs longer 
+than n seconds the worker process will kill that particular unit and any child processes 
+then let the next one begin processing (if another unit is available). This may help with a 'runaway' 
+process. 
+
+.TP
+.B --help, -h
+Display a terse help message then exit.
+
+.TP
+.B  --verbose, -v
+Run the program in verbose mode. Add more -v for more verbosity. 
+
+.TP
+.B  --version, -V
+Print the version number of pxargs and exit.
+
+
+.SH EXAMPLES:
+.br
+
+mpirun -np 16 pxargs --arg-file=arglist.txt --proc=/bin/tileproc 
+.br
+The above command will start 16 processes and run /bin/tileproc on all items in arglist.txt, arglist.txt has a list 
+of arguments separated by newlines.
+.br
+
+mpirun -np 16 pxargs --proc=/bin/tileproc < arglist.txt
+.br
+The above command will start 16 processes and run /bin/tileproc on all items given in arglist.txt
+.br
+
+mpirun -np 16 pxargs --arg-file=arglist.txt --proc=/bin/tileproc -v -v -v --random-starts 1-6 --work-analyze 
+.br
+The above command will start 16 processes, randomly wait between 1 and 6 seconds while sending the 
+initial batch of work items, then process the rest of the work items until there is no more work, then 
+print out each unit's/item's process time. Note, the waiting is only done on the initial work/item
+distribution phase, see the --random-starts option.
+.br
+
+
+.SH ENVIRONMENT:
+Standard mpi environment applies
+
+.SH ASSUMPTIONS:
+All data files or input files given via the arglist are accessible via a global file system like gfs, nfs, cfs, luster, etc.. 
+
+.SH SEE ALSO
+xargs(1)
+
+.SH AUTHOR:
+Andrew Michaelis 
+
+.SH BUGS:
+Please email bugs to: amac at hyperplane dot org 
+
