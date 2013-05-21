@@ -2,9 +2,6 @@
 # FILE:
 #  autogen.sh
 #
-# VERSION:
-#  0.0.1, Mon Mar  5 10:50:26 PST 2012
-#
 # LICENSE:
 #  This file is part of pxargs.
 #

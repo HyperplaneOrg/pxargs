@@ -25,7 +25,7 @@
 #
 
 VERSION='0.0.3'
-PACKAGE='pxargs-'$VERSION
+PACKAGE='pxargs'
 
 cdr=`basename $PWD`
 if [ $cdr != $PACKAGE ]; then
@@ -35,7 +35,14 @@ fi
 
 cd ../
 
-tar -c -z -v -f $PACKAGE'.tgz' $PACKAGE
+tar -c -z -v --exclude="pxargs/.git/*" -f $PACKAGE-$VERSION'.tgz' $PACKAGE
 
-sha1sum $PACKAGE'.tgz' > $PACKAGE'.tgz.sha1'
+SHSUM=`which sha1sum`
+if [ -z "$SHSUM" ]; then
+   SHSUM=`which shasum`
+fi
+
+if [ ! -z "$SHSUM" ]; then
+   $SHSUM $PACKAGE-$VERSION'.tgz' > $PACKAGE-$VERSION'.tgz.sha1'
+fi
 
