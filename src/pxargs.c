@@ -105,14 +105,18 @@ static int xpopen(char* cmd, unsigned int maxutime, int verbose, FILE* verbout)
    }
    else if(MODchldpid == 0)
    {
-      /* set a new group leader here incase we need to terminate all children of this child */
+      /* set a new group leader here... */
       if(setpgid(0, 0) < 0) 
       {
          fprintf(stderr, "\"%s\" @L %d : setpgid failed : %s\n", __FILE__, __LINE__, strerror(errno));
          exit(1);
       } 
-      execl("/bin/sh", "sh", "-c", cmd, NULL);
-      _exit(127);
+
+      if( execl("/bin/sh", "sh", "-c", cmd, NULL) < 0)
+      {
+         fprintf(stderr, "\"%s\" @L %d : execl failed : %s\n", __FILE__, __LINE__, strerror(errno));
+         _exit(127);
+      }
    }
    else
    {
@@ -275,7 +279,7 @@ WORK_UNIT* load_work_list(const char* fname, int* n)
             
       /* basic inits, see pxargs.h */
       worku[i].proc_secs = 0;
-      worku[i].resrank = RANK_UNASSINGED;
+      worku[i].resrank = RANK_UNASSIGNED;
       worku[i].id_tag = i;
       worku[i].was_killed = PX_NO;
       i++;
@@ -294,11 +298,11 @@ void fprint_worku(FILE* fout, WORK_UNIT* worku)
       fprintf(fout, "WORKU NULL\n");
       return;
    }
-   fprintf(fout, "PROC PATH = \"%s\", ", ((worku->procpath[0] != '\0') ? worku->procpath : "UNASSINGED"));
+   fprintf(fout, "PROC PATH = \"%s\", ", ((worku->procpath[0] != '\0') ? worku->procpath : "UNASSIGNED"));
    fprintf(fout, "PARGS  = \"%s\", ", worku->pargs);
 
-   if(worku->resrank == RANK_UNASSINGED)
-      fprintf(fout, "RESPONSIBLE RANK = RANK_UNASSINGED, ");
+   if(worku->resrank == RANK_UNASSIGNED)
+      fprintf(fout, "RESPONSIBLE RANK = RANK_UNASSIGNED, ");
    else
       fprintf(fout, "RESPONSIBLE RANK = %d, ", worku->resrank);
 

@@ -47,7 +47,7 @@
 #endif
 
 /* From rank info */
-#define RANK_UNASSINGED -1
+#define RANK_UNASSIGNED -1
 
 /* signal code for no more work */
 #define ENDWORK 2
