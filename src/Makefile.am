@@ -17,11 +17,11 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pxargs. If not, see http://www.gnu.org/licenses/.
 #
-#  Copyright (C) 2012 Andrew Michaelis
+#  Copyright (C) 2012, 2014 Andrew Michaelis
 
 INCLUDES=-I./ 
 
 bin_PROGRAMS=pxargs
 
-pxargs_SOURCES=main.c pxargs.c pxargs.h ptmpf.h ptmpf.c
+pxargs_SOURCES=main.c pxargs.c pxargs.h ptmpf.h ptmpf.c pbsu.c pbsu.h
 

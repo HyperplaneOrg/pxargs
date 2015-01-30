@@ -2,7 +2,8 @@
 #    configure.ac
 #
 # VERSION:
-#  0.0.2, Mon Mar  5 10:54:38 PST 2012
+#  0.0.2, Mar 2012
+#  0.0.3, Dec 2014
 #
 # LICENSE:
 #  This file is part of pxargs.
@@ -20,9 +21,9 @@
 #  You should have received a copy of the GNU General Public License
 #  along with pxargs. If not, see http://www.gnu.org/licenses/.
 #
-#  Copyright (C) 2012 Andrew Michaelis
+#  Copyright (C) 2012, 2014 Andrew Michaelis
 
-AC_INIT([pxargs], [0.0.3-beta])
+AC_INIT([pxargs], [0.0.4-beta])
 AM_INIT_AUTOMAKE([foreign])
 AM_CONFIG_HEADER([config.h])
 AM_MAINTAINER_MODE()
@@ -76,17 +77,27 @@ AC_CHECK_HEADERS([getopt.h])
 AC_CHECK_HEADERS([sys/types.h]) 
 AC_CHECK_HEADERS([sys/wait.h]) 
 AC_CHECK_HEADERS([signal.h]) 
+AC_CHECK_HEADERS([pthread.h])
+AC_CHECK_HEADERS([pbs_ifl.h]) 
+AC_CHECK_HEADERS([pbs_error.h]) 
+AC_CHECK_HEADERS([regex.h])
 AC_HEADER_TIME
 
 # Check for functions
 AC_FUNC_STRFTIME
-AC_CHECK_FUNCS([getopt strncpy strtok_r])
+AC_CHECK_FUNCS([getopt strtok_r])
 AC_CHECK_FUNCS([getopt_long getenv])
 AC_CHECK_FUNCS([sigaction])
 AC_CHECK_FUNCS([setpgid])
 AC_CHECK_FUNCS([alarm])
 AC_CHECK_FUNCS([_exit])
+AC_CHECK_FUNCS([nanosleep])
 AC_CHECK_LIB([z], [inflate])
+AC_CHECK_LIB([m], [ceil])
+AC_CHECK_LIB([pbs], [pbs_connect])
+AC_CHECK_LIB([pthread], [pthread_create])
+AC_CHECK_FUNCS([pthread_setconcurrency])
+AC_CHECK_FUNCS([regcomp])
 
 AC_CHECK_HEADER([mpi.h],[have_mpi_h=yes],[have_mpi_h=no])
 if test "x$have_mpi_h" = xno; then
@@ -100,15 +111,6 @@ AC_DEFINE([USER_PATH_MAX], [2048], [If PATH_MAX missing, no limits.h, then use t
 CPPFLAGS="$CPPFLAGS "'-DDATADIR="\"$(datadir)\""'
 
 AC_OUTPUT(src/Makefile man/Makefile Makefile) 
-
-# post proc printout stuff
-IF_ENABLED_DISABLED() {
-   if test "x$2" = "xyes"; then
-      echo "$1 Enabled"
-   else
-      echo "$1 Disabled"
-   fi
-}
 
 echo ""
 echo "                       Configure Summary"
@@ -138,5 +140,7 @@ echo "Miscellaneous:"
 echo "--------------------"
 echo "             PREFIX: $prefix"
 echo "            Signals: $ac_cv_func_sigaction"
+echo "           pthreads: $ac_cv_lib_pthread_pthread_create"
+echo "    PBS Integration: $ac_cv_lib_pbs_pbs_connect"
 echo ""
 
