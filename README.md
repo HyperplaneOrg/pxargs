@@ -9,7 +9,7 @@ Notes
 ==
 
 This utility is a proof of concept so the construction is a bit messy. pxargs has been used for fairly large (> 11,000 cores)
-and diverse processing pipelines. It has been found to be a convenient mechanism of taking complex serial code to large scale
+and diverse processing pipelines. It has been found to be a convenient mechanism of brining complex serial code to large scale
 parallel setups in minutes, with no added software development.
 
 If the user's compute environment involves a pbs scheduler (pro or torque) then they may want to take a peek at the -n 
