@@ -5,8 +5,8 @@ pxargs is a simple work queue with rudimentary load balancing using the message 
 It builds and executes command lines from a newline delimited list contained in FILE or from standard input. pxargs will
 run the commandlines in parallel using mpi. It is losely based on the venerable xargs. See the manpage for more details.
 
-Notes
-==
+### Notes
+
 
 This utility is a proof of concept so the construction is a bit messy. pxargs has been used for fairly large (> 11,000 cores)
 and diverse processing pipelines. It has been found to be a convenient mechanism of brining complex serial code to large scale
