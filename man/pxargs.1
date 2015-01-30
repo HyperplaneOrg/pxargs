@@ -125,10 +125,21 @@ print out each unit's/item's process time. Note, the waiting is only done on the
 distribution phase, see the --random-starts option.
 .br
 
+mpiexec -np 8192 pxargs --arg-file=arglist.txt --proc=/bin/tileproc -v -v -m 180 -w --not-complete=newArgList.txt -t 240
+.br
+The above command will start 8192 processes and begin chewing away at the work listed in arglist.txt using the 
+serial program tileproc. Any tileproc process that takes longer than 180 seconds to execute will be killed, since
+we expect the tileproc execution time per unit to be completed within 120 seconds at most (-m). The maximum wall time we 
+could request for the entire job (via pbs qsub) is 8 hours, but we know that in order for all items in arglist.txt 
+to complete we need ~96 hours so 240 seconds (4 minutes) before the 8 hour job is killed by pbs pxargs will 
+asynchronously take inventory of which items in arglist.txt have not completed and write these out to 
+newArgList.txt, which can be used to resubmit another job, repeat until done... 
+.br
+
 
 .SH ENVIRONMENT
-Standard mpi environment applies. When using the monitor process, the node on which the process is running must 
-be able to contact the pbs scheduler, e.g. not blocked by firewalls, etc... 
+Standard mpi environment applies. When using a monitor process (-n option), the node on which the process (rank 1) is running must 
+be able to contact the pbs scheduler, i.e. it cannot be blocked by firewalls, lack of network routes, etc... 
 
 .SH ASSUMPTIONS
 All data files or input files given via the arglist are accessible via a global file system like gfs, nfs, cfs, luster, etc.. 
@@ -137,7 +148,8 @@ This utility only works well for command lines that take longer than a ~1/4 seco
 .SH NOTES
 Why is the monitoring facility placed in it's own mpi proc, isn't that wasteful as it doesn't do much? The reason is that
 communications with external services, signal handling and threading activity can cause issues on some platforms and mpi 
-implementations if the monitor is threaded within the coordinator/master process (rank 0). See pbs resource "chunking".
+implementations if the monitor is threaded within the coordinator/master process (rank 0). 
+See pbs resource "chunking".
 
 .SH SEE ALSO
 xargs(1)
