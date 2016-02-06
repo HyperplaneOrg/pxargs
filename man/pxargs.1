@@ -75,10 +75,12 @@ for the alarm signal delivery, so pad the 'n' by a few seconds if needed.
 .TP
 .B -n, --not-complete <path> 
 A file that pxargs will attempt to write out unfinished work at pre-exit. This option requires that pxargs is compiled against libpbs. 
-When this option is used pxargs will use ONE mpi proc to monitor and react to pre-exit "events" (or other events). When using pbs, you 
-can pack ONE node with more processors than is available, as this ONE mpi process is not really doing much work. See the pbs qsub options 
-on how to "crowd" one node with more mpi procs (chunks). The rank ordering/tasking: rank 0 is the queue (master), rank 1 is the monitor 
-(when this option is used), all others ranks (consumers) do work.
+When this option is used pxargs will use ONE mpi proc to monitor and react to pre-exit "events" (or other events). This options is 
+a rudimentary form of check-pointing. 
+
+When using pbs, one can pack ONE node with more processes, as this ONE mpi process is not really doing much work. See the PBS chunk-level 
+resources requests below or your pbs qsub options on how to "crowd" one node with more mpi procs. The rank ordering/tasking: 
+rank 0 is the queue (master), rank 1 is the monitor (when this option is used), all others ranks (consumers) do work.
 
 Note, when the option -r | --random-starts is used with this option the processing must have transitioned to the producer 
 consumer mode before a "pre-exit" event occurs or else a successful dump of the incomplete may not complete; in other words,
@@ -148,11 +150,34 @@ This utility only works well for command lines that take longer than a ~1/4 seco
 .SH NOTES
 Why is the monitoring facility placed in it's own mpi proc, isn't that wasteful as it doesn't do much? The reason is that
 communications with external services, signal handling and threading activity can cause issues on some platforms and mpi 
-implementations if the monitor is threaded within the coordinator/master process (rank 0). 
-See pbs resource "chunking".
+implementations if the monitor is threaded within the coordinator/master process (rank 0); see below. 
+
+.B PBS chunk-level resources requests 
+.br
+Because pxargs uses one mpi process for scheduling work, and possibly another to monitor completed and non completed 
+command lines (see above), the user may want to consider using the PBS chunk-level request capabilities 
+when possible.  You may want to pack ONE node with more processes, as ONE or TWO mpi process may not be doing much 
+work if the job is small. 
+
+As noted in the PBS pro manual (2015), chunk resources are requested in chunk specifications in a select statement, e.g.
+.br
+.br
+.B -l select=[N:][chunk specification][+[N:]chunk
+.br
+.br
+One may want to use something like this below to add an extra process for rank 0 with a small job:
+.br
+.br
+.B #PBS -l select=1:ncpus=16:mpiprocs=16+2:ncpus=15:mpiprocs=15
+.br
+.br
+This gives us 16 mpi procs on the first node (where rank 0 is) and 15 mpi procs on all other.
+node0 (1+15) + node1 (15) + node2 (15), for 45 cores doing work and 1 core scheduling... 
 
 .SH SEE ALSO
 xargs(1)
+.br
+https://github.com/HyperplaneOrg/pxargs
 
 .SH AUTHOR
 Andrew Michaelis 
