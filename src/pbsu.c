@@ -38,6 +38,10 @@
 #include <errno.h>
 #include <regex.h>
 
+#ifdef HAVE_LIMITS_H 
+ #include <limits.h>
+#endif
+
 #ifdef HAVE_PBS_IFL_H 
  #include <pbs_ifl.h> 
 #endif
@@ -52,6 +56,10 @@
  #define STRTOK(s, d, sp) (strtok_r(s, d, sp))
 #else
  #define STRTOK(s, d, sp) (strtok(s, d))
+#endif
+
+#ifndef UINT_MAX	
+ #define UINT_MAX	4294967295U  
 #endif
  
 #if defined(HAVE_LIBPBS) && defined(HAVE_LIBPTHREAD) 
@@ -162,8 +170,12 @@ unsigned int pbsu_job_time_left(int conn, char* jobID)
    struct attrl *aptr; 
 
    if( (bs = pbs_statjob(conn, jobID, NULL, NULL)) == NULL)
+   {
       fprintf(stderr, "%s @L %d : pbs_statjob failed : %s\n", SRC_FILE, __LINE__, 
                               (((ers = pbs_geterrmsg(conn)) != NULL ? ers : "NA")));
+      /* The job info probe can fail for various reasons, return a large number so we don't disrupt this job */
+      return UINT_MAX - 1; 
+   }
 
 	for(aptr = bs->attribs; aptr != NULL; aptr = aptr->next)
    {
